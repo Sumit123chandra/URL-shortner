@@ -1,0 +1,13 @@
+# Netlify configuration for Trim URL Shortener
+# This makes short links like yoursite.com/abc12 work correctly
+
+[[redirects]]
+  from = "/:code"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+[[redirects]]
+  from = "/:code"
+  to = "/index.html"
+  status = 200

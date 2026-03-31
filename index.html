@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trim — URL Shortener</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #1a1208;
+  --ink2: #4a3f2f;
+  --ink3: #8a7d6b;
+  --paper: #faf7f2;
+  --paper2: #f2ede4;
+  --paper3: #e8e0d0;
+  --warm: #d4a853;
+  --warm2: #b8892e;
+  --warm-bg: #fdf3dc;
+  --tomato: #c94a2e;
+  --sage: #5a7a5e;
+  --border: #ddd5c4;
+  --border2: #c8bca8;
+  --r: 6px;
+  --mono: 'IBM Plex Mono', monospace;
+  --head: 'Syne', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+body {
+  font-family: var(--body);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+.page { max-width: 700px; margin: 0 auto; padding: 0 20px 80px; }
+
+/* NAV */
+nav {
+  padding: 28px 0 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1.5px solid var(--ink);
+  margin-bottom: 60px;
+}
+.brand {
+  font-family: var(--head); font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px; color: var(--ink); text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.brand-dot { width: 8px; height: 8px; background: var(--warm); border-radius: 50%; flex-shrink: 0; }
+.nav-pill {
+  font-family: var(--mono); font-size: 11px; color: var(--ink3);
+  background: var(--paper3); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 20px;
+}
+
+/* HERO */
+.hero { margin-bottom: 44px; }
+.kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 14px; }
+h1 {
+  font-family: var(--head); font-size: clamp(36px, 7vw, 56px);
+  font-weight: 800; line-height: 1.05; letter-spacing: -2px;
+  color: var(--ink); margin-bottom: 14px;
+}
+h1 em { font-style: italic; font-weight: 300; font-family: var(--body); color: var(--ink2); }
+.sub { font-size: 16px; color: var(--ink2); line-height: 1.65; max-width: 440px; font-weight: 300; }
+
+/* STATS */
+.stats {
+  display: flex; border: 1.5px solid var(--ink);
+  border-radius: var(--r); overflow: hidden; margin-bottom: 26px;
+}
+.stat { flex: 1; padding: 14px 20px; border-right: 1px solid var(--border); text-align: center; }
+.stat:last-child { border-right: none; }
+.stat-n { font-family: var(--head); font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--ink); display: block; }
+.stat-l { font-size: 11px; color: var(--ink3); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); display: block; margin-top: 2px; }
+
+/* PANEL */
+.panel {
+  background: var(--paper2); border: 1.5px solid var(--ink);
+  border-radius: var(--r); padding: 26px; margin-bottom: 16px;
+}
+.flabel { font-size: 11px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink3); margin-bottom: 7px; display: block; }
+.input-row {
+  display: flex; border: 1.5px solid var(--ink);
+  border-radius: var(--r); overflow: hidden; background: var(--paper); margin-bottom: 14px;
+}
+.url-in {
+  flex: 1; background: transparent; border: none; outline: none;
+  padding: 13px 16px; font-family: var(--body); font-size: 15px; color: var(--ink);
+}
+.url-in::placeholder { color: var(--ink3); font-weight: 300; }
+.go-btn {
+  background: var(--ink); color: var(--paper); border: none;
+  padding: 13px 22px; font-family: var(--head); font-size: 14px;
+  font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;
+}
+.go-btn:hover { background: var(--warm2); }
+.go-btn:active { transform: scale(0.98); }
+.go-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.alias-row {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--border2); border-radius: var(--r);
+  overflow: hidden; background: var(--paper);
+}
+.alias-pre {
+  padding: 10px 12px 10px 14px; font-family: var(--mono); font-size: 13px;
+  color: var(--ink3); background: var(--paper3);
+  border-right: 1px solid var(--border); white-space: nowrap;
+}
+.alias-in {
+  flex: 1; background: transparent; border: none; outline: none;
+  padding: 10px 14px; font-family: var(--mono); font-size: 13px; color: var(--ink);
+}
+.alias-in::placeholder { color: var(--ink3); }
+
+.notice {
+  margin-top: 14px; padding: 10px 14px;
+  background: var(--paper3); border-radius: var(--r);
+  font-size: 12px; color: var(--ink2); font-family: var(--mono); line-height: 1.6;
+  display: none;
+}
+.notice.show { display: block; }
+.notice.err { background: #fdecea; color: var(--tomato); }
+.notice.ok  { background: #eaf2eb; color: var(--sage); }
+
+/* RESULT */
+.result {
+  background: var(--warm-bg); border: 1.5px solid var(--warm2);
+  border-radius: var(--r); padding: 18px 22px;
+  margin-bottom: 16px; display: none;
+  animation: pop 0.25s ease;
+}
+@keyframes pop { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+.result-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.short-link { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--ink); text-decoration: none; }
+.short-link:hover { text-decoration: underline dotted; }
+.copy-btn {
+  background: var(--ink); color: var(--paper); border: none;
+  padding: 8px 16px; font-family: var(--mono); font-size: 12px;
+  cursor: pointer; border-radius: 4px; transition: background 0.15s; white-space: nowrap;
+}
+.copy-btn:hover { background: var(--warm2); }
+.copy-btn.ok { background: var(--sage); }
+.result-orig { font-size: 12px; color: var(--ink3); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* LIST */
+.list-wrap { display: none; }
+.list-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px;
+}
+.list-title { font-family: var(--head); font-size: 16px; font-weight: 700; }
+.clr-btn { font-family: var(--mono); font-size: 11px; color: var(--ink3); background: none; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+.clr-btn:hover { color: var(--tomato); }
+.links { display: flex; flex-direction: column; gap: 5px; }
+.litem {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px; background: var(--paper);
+  border: 1px solid var(--border); border-radius: var(--r); transition: border-color 0.15s;
+}
+.litem:hover { border-color: var(--border2); }
+.lnum { font-family: var(--mono); font-size: 11px; color: var(--ink3); min-width: 20px; text-align: right; }
+.linfo { flex: 1; min-width: 0; }
+.lshort { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--ink); text-decoration: none; display: block; margin-bottom: 3px; }
+.lshort:hover { text-decoration: underline dotted; }
+.lorig { font-size: 12px; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 300; }
+.lmeta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.lclicks { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+.ldate { font-size: 11px; color: var(--ink3); font-weight: 300; }
+.lcopy { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; font-family: var(--mono); font-size: 11px; color: var(--ink2); cursor: pointer; transition: all 0.15s; }
+.lcopy:hover { border-color: var(--ink); color: var(--ink); }
+.lcopy.ok { border-color: var(--sage); color: var(--sage); }
+.ldel { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 17px; line-height: 1; padding: 2px 4px; transition: color 0.15s; }
+.ldel:hover { color: var(--tomato); }
+
+/* SETUP BANNER */
+.setup-banner {
+  background: #fff8ed; border: 1.5px solid var(--warm);
+  border-radius: var(--r); padding: 20px 24px; margin-bottom: 20px;
+}
+.setup-title { font-family: var(--head); font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+.setup-steps { font-size: 13px; color: var(--ink2); line-height: 2; font-weight: 300; }
+.setup-steps code { font-family: var(--mono); font-size: 12px; background: var(--paper3); padding: 1px 6px; border-radius: 3px; color: var(--ink); }
+.setup-steps a { color: var(--warm2); }
+
+/* FOOTER */
+footer {
+  margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; gap: 20px; align-items: flex-start;
+}
+.f-note { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+.f-info { font-size: 12px; color: var(--ink3); font-weight: 300; text-align: right; line-height: 1.6; max-width: 280px; }
+
+/* REDIRECT PAGE */
+#redir-page {
+  display: none; min-height: 100vh;
+  flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px;
+}
+.rbadge { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink3); margin-bottom: 22px; }
+.rtitle { font-family: var(--head); font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+.rdest { font-family: var(--mono); font-size: 13px; color: var(--ink2); max-width: 480px; word-break: break-all; line-height: 1.6; margin-bottom: 26px; }
+.rtrack { width: 220px; height: 2px; background: var(--paper3); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.rfill { height: 100%; width: 0; background: var(--ink); transition: width 3s linear; }
+.rnote { font-size: 13px; color: var(--ink3); font-weight: 300; }
+
+/* NOT FOUND */
+#notfound-page {
+  display: none; min-height: 100vh;
+  flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px;
+}
+.nf-code { font-family: var(--head); font-size: 80px; font-weight: 800; letter-spacing: -4px; color: var(--paper3); margin-bottom: 8px; }
+.nf-title { font-family: var(--head); font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+.nf-sub { font-size: 15px; color: var(--ink3); margin-bottom: 24px; font-weight: 300; }
+.nf-back { font-family: var(--mono); font-size: 13px; color: var(--ink); text-decoration: underline dotted; }
+</style>
+</head>
+<body>
+
+<!-- MAIN PAGE -->
+<div class="page" id="main-page">
+  <nav>
+    <a class="brand" href="/"><div class="brand-dot"></div>Trim</a>
+    <span class="nav-pill" id="status-pill">⚙ needs setup</span>
+  </nav>
+
+  <section class="hero">
+    <p class="kicker">URL Shortener</p>
+    <h1>Long URLs,<br><em>cut down to size.</em></h1>
+    <p class="sub">Paste anything long, get something short. Anyone with the link can use it — powered by Supabase.</p>
+  </section>
+
+  <!-- Setup banner — shown until configured -->
+  <div class="setup-banner" id="setup-banner">
+    <div class="setup-title">⚙ One-time setup required</div>
+    <div class="setup-steps">
+      1. Create a free account at <a href="https://supabase.com" target="_blank">supabase.com</a><br>
+      2. Create a new project → go to <strong>SQL Editor</strong> → run the SQL in <code>setup.sql</code><br>
+      3. Go to <strong>Project Settings → API</strong> → copy your <strong>Project URL</strong> and <strong>anon key</strong><br>
+      4. Open <code>config.js</code> and paste them in<br>
+      5. Deploy all files to Netlify / Vercel — done ✓
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-n" id="s-links">–</span><span class="stat-l">Links</span></div>
+    <div class="stat"><span class="stat-n" id="s-clicks">–</span><span class="stat-l">Clicks</span></div>
+    <div class="stat"><span class="stat-n" id="s-today">–</span><span class="stat-l">Today</span></div>
+  </div>
+
+  <div class="panel">
+    <label class="flabel">Your long URL</label>
+    <div class="input-row">
+      <input class="url-in" id="long-url" type="url" placeholder="https://really-long-website.com/with/a/very/long/path" />
+      <button class="go-btn" id="go-btn" onclick="doShorten()">Trim it →</button>
+    </div>
+    <label class="flabel">Custom alias <span style="text-transform:none;letter-spacing:0;font-family:var(--body);font-size:11px;font-weight:300;">(optional)</span></label>
+    <div class="alias-row">
+      <span class="alias-pre" id="host-prefix">yoursite.com/</span>
+      <input class="alias-in" id="alias" type="text" placeholder="my-link" maxlength="30" />
+    </div>
+    <div class="notice" id="notice"></div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="result-row">
+      <a class="short-link" id="res-link" href="#" target="_blank"></a>
+      <button class="copy-btn" id="res-copy" onclick="copyResult()">Copy link</button>
+    </div>
+    <div class="result-orig" id="res-orig"></div>
+  </div>
+
+  <div class="list-wrap" id="list-wrap">
+    <div class="list-head">
+      <span class="list-title">Recent links</span>
+      <button class="clr-btn" onclick="loadLinks()">↻ Refresh</button>
+    </div>
+    <div class="links" id="links-list"></div>
+  </div>
+
+  <footer>
+    <span class="f-note">trim — open source</span>
+    <span class="f-info">Links stored in Supabase. Anyone with the short link can access it from any device, anywhere.</span>
+  </footer>
+</div>
+
+<!-- REDIRECT PAGE -->
+<div id="redir-page">
+  <p class="rbadge">Trim — redirecting</p>
+  <h2 class="rtitle">On your way...</h2>
+  <p class="rdest" id="r-dest"></p>
+  <div class="rtrack"><div class="rfill" id="r-fill"></div></div>
+  <p class="rnote">Redirecting in 3 seconds</p>
+</div>
+
+<!-- NOT FOUND -->
+<div id="notfound-page">
+  <div class="nf-code">404</div>
+  <div class="nf-title">Link not found</div>
+  <div class="nf-sub">This short link doesn't exist or may have been deleted.</div>
+  <a class="nf-back" href="/">← Back to Trim</a>
+</div>
+
+<script src="config.js"></script>
+<script>
+// ── helpers ──────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const HOST = window.location.origin;
+
+const relTime = ts => {
+  const s = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+};
+
+const randCode = () => {
+  const c = 'abcdefghjkmnpqrstuvwxyz3456789';
+  return Array.from({length:5}, () => c[Math.floor(Math.random()*c.length)]).join('');
+};
+
+const validUrl = s => {
+  try { const u = new URL(s); return u.protocol==='https:' || u.protocol==='http:'; }
+  catch { return false; }
+};
+
+// ── Supabase API calls ─────────────────────────────────
+const CONFIGURED = typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL && !SUPABASE_URL.includes('YOUR_');
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    ...opts,
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok && res.status !== 406) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  if (res.status === 204 || res.headers.get('content-length') === '0') return null;
+  return res.json();
+}
+
+async function getLink(code) {
+  const data = await sbFetch(`links?code=eq.${encodeURIComponent(code)}&limit=1`);
+  return data && data[0] ? data[0] : null;
+}
+
+async function createLink(code, url) {
+  return sbFetch('links', {
+    method: 'POST',
+    prefer: 'return=representation',
+    body: JSON.stringify({ code, original_url: url })
+  });
+}
+
+async function incrementClick(id) {
+  // Uses an RPC function for atomic increment
+  return sbFetch(`rpc/increment_clicks`, {
+    method: 'POST',
+    body: JSON.stringify({ link_id: id })
+  }).catch(() => {
+    // Fallback: just fetch current and update
+  });
+}
+
+async function getStats() {
+  const [linksRes, todayRes] = await Promise.all([
+    sbFetch('links?select=id,clicks'),
+    sbFetch(`links?select=id&created_at=gte.${new Date(new Date().setHours(0,0,0,0)).toISOString()}`)
+  ]);
+  const total = linksRes ? linksRes.length : 0;
+  const totalClicks = linksRes ? linksRes.reduce((a,l) => a + (l.clicks||0), 0) : 0;
+  const today = todayRes ? todayRes.length : 0;
+  return { total, totalClicks, today };
+}
+
+async function getRecentLinks() {
+  return sbFetch('links?select=*&order=created_at.desc&limit=20');
+}
+
+// ── UI ──────────────────────────────────────────────────
+function showNotice(msg, type = '') {
+  const el = $('notice');
+  el.textContent = (type === 'err' ? '! ' : type === 'ok' ? '✓ ' : '') + msg;
+  el.className = 'notice show ' + type;
+  if (type !== 'loading') setTimeout(() => { el.className = 'notice'; }, 4000);
+}
+
+function hideNotice() { $('notice').className = 'notice'; }
+
+async function doShorten() {
+  if (!CONFIGURED) { showNotice('Please complete the setup in config.js first.', 'err'); return; }
+
+  const raw = $('long-url').value.trim();
+  let alias = $('alias').value.trim().toLowerCase().replace(/[^a-z0-9\-_]/g, '');
+
+  if (!raw) { showNotice('Please enter a URL.', 'err'); return; }
+  if (!validUrl(raw)) { showNotice('Not a valid URL — make sure it starts with https://', 'err'); return; }
+
+  const btn = $('go-btn');
+  btn.disabled = true;
+  btn.textContent = 'Working...';
+  showNotice('Saving your link...', 'loading');
+
+  try {
+    if (!alias) {
+      // Generate unique code
+      let attempts = 0;
+      do {
+        alias = randCode();
+        const existing = await getLink(alias);
+        if (!existing) break;
+        attempts++;
+      } while (attempts < 10);
+    } else {
+      const existing = await getLink(alias);
+      if (existing) {
+        showNotice('That alias is already taken — try another.', 'err');
+        btn.disabled = false; btn.textContent = 'Trim it →';
+        return;
+      }
+    }
+
+    await createLink(alias, raw);
+
+    const shortUrl = HOST + '/' + alias;
+    $('res-link').textContent = shortUrl;
+    $('res-link').href = shortUrl;
+    $('res-orig').textContent = '↳ ' + raw;
+    $('result').style.display = 'block';
+
+    const rc = $('res-copy');
+    rc.textContent = 'Copy link';
+    rc.className = 'copy-btn';
+
+    $('long-url').value = '';
+    $('alias').value = '';
+    hideNotice();
+
+    loadLinks();
+    loadStats();
+  } catch(e) {
+    showNotice('Error: ' + (e.message || 'Something went wrong'), 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Trim it →';
+}
+
+function copyResult() {
+  const t = $('res-link').textContent;
+  navigator.clipboard.writeText(t).then(() => {
+    const b = $('res-copy');
+    b.textContent = 'Copied ✓';
+    b.className = 'copy-btn ok';
+    setTimeout(() => { b.textContent = 'Copy link'; b.className = 'copy-btn'; }, 2000);
+  });
+}
+
+function copyCode(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.className = 'lcopy ok';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.className = 'lcopy'; }, 2000);
+  });
+}
+
+async function loadStats() {
+  if (!CONFIGURED) return;
+  try {
+    const s = await getStats();
+    $('s-links').textContent = s.total;
+    $('s-clicks').textContent = s.totalClicks;
+    $('s-today').textContent = s.today;
+  } catch(e) {}
+}
+
+async function loadLinks() {
+  if (!CONFIGURED) return;
+  try {
+    const links = await getRecentLinks();
+    const wrap = $('list-wrap');
+    const list = $('links-list');
+    if (!links || !links.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    list.innerHTML = links.map((l, i) => {
+      const shortUrl = HOST + '/' + l.code;
+      return `
+        <div class="litem">
+          <span class="lnum">${String(i+1).padStart(2,'0')}</span>
+          <div class="linfo">
+            <a class="lshort" href="${shortUrl}" target="_blank">${shortUrl.replace('https://','').replace('http://','')}</a>
+            <div class="lorig">${l.original_url}</div>
+          </div>
+          <div class="lmeta">
+            <span class="lclicks">${l.clicks||0} click${(l.clicks||0)!==1?'s':''}</span>
+            <span class="ldate">${relTime(l.created_at)}</span>
+          </div>
+          <button class="lcopy" onclick="copyCode('${shortUrl}',this)">Copy</button>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {}
+}
+
+// ── Router — handles /code paths ──────────────────────
+async function route() {
+  const path = window.location.pathname.replace(/^\//, '').split('/')[0];
+
+  $('host-prefix').textContent = window.location.hostname + '/';
+
+  if (!path || path === 'index.html') {
+    // Homepage
+    if (CONFIGURED) {
+      $('setup-banner').style.display = 'none';
+      $('status-pill').textContent = '● live';
+      $('status-pill').style.color = '#5a7a5e';
+      loadStats();
+      loadLinks();
+    }
+    return;
+  }
+
+  // It's a short code — try to redirect
+  $('main-page').style.display = 'none';
+
+  if (!CONFIGURED) {
+    $('notfound-page').style.display = 'flex';
+    return;
+  }
+
+  try {
+    const link = await getLink(path);
+    if (!link) {
+      $('notfound-page').style.display = 'flex';
+      return;
+    }
+
+    // Show redirect page
+    $('redir-page').style.display = 'flex';
+    $('r-dest').textContent = link.original_url;
+
+    // Increment click count
+    incrementClick(link.id);
+
+    requestAnimationFrame(() => {
+      $('r-fill').style.width = '100%';
+    });
+
+    setTimeout(() => {
+      window.location.href = link.original_url;
+    }, 3000);
+
+  } catch(e) {
+    $('notfound-page').style.display = 'flex';
+  }
+}
+
+$('long-url').addEventListener('keydown', e => { if (e.key === 'Enter') doShorten(); });
+route();
+</script>
+</body>
+</html>
