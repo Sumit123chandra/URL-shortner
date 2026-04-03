@@ -9,5 +9,5 @@
 const SUPABASE_URL = "https://btisikfmvjzhiwtdhxtk.supabase.co";
 // Example: "https://abcdefghijkl.supabase.co"
 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aXNpa2Ztdmp6aGl3dGRoeHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDMxNDEsImV4cCI6MjA5MDUxOTE0MX0.SNOrm1ef9SpidSvof51ol3eusoW1Lb_d_Zw4gaLmYBI";
+const SUPABASE_ANON_KEY = "";  //i am deleting anon key now , if necessary then take anon key from supabase project and paste here
 // Example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
